@@ -1,3 +1,3 @@
-Next.js, Redux basic Todo app.
+Next.js, Redux, useQuery basic Todo app.
 
-Netlify: https://nextjs-redux-todo-milos.netlify.app/
+Netlify:
