@@ -3,13 +3,13 @@ import { useDispatch } from 'react-redux';
 import { useQuery, useMutation } from 'react-query';
 
 const fetchTodos = async () => {
-  const response = await fetch('http://localhost:3000/api/todos');
+  const response = await fetch('/api/todos');
   const data = await response.json();
   return data;
 };
 
 const addTodo = async (text) => {
-  const response = await fetch('http://localhost:3000/api/todos', {
+  const response = await fetch('/api/todos', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -21,7 +21,7 @@ const addTodo = async (text) => {
 };
 
 const deleteTodo = async (id) => {
-  const response = await fetch(`http://localhost:3000/api/todos?id=${id}`, {
+  const response = await fetch(`/api/todos?id=${id}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
