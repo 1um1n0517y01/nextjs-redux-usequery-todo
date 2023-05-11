@@ -1,15 +1,57 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { addTodo, removeTodo } from '../redux/action';
+import { useDispatch } from 'react-redux';
+import { useQuery, useMutation } from 'react-query';
+
+const fetchTodos = async () => {
+  const response = await fetch('http://localhost:3000/api/todos');
+  const data = await response.json();
+  return data;
+};
+
+const addTodo = async (text) => {
+  const response = await fetch('http://localhost:3000/api/todos', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ text }),
+  });
+  const data = await response.json();
+  return data;
+};
+
+const deleteTodo = async (id) => {
+  const response = await fetch(`http://localhost:3000/api/todos?id=${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  const data = await response.json();
+  return data;
+};
 
 const TodoList = () => {
   const [inputEvent, setInputEvent] = useState('');
   const dispatch = useDispatch();
-  const selector = useSelector((state) => state.todoReducer.list);
+
+  const { data: todos, refetch } = useQuery('todos', fetchTodos);
+
+  const addTodoMutation = useMutation(addTodo, {
+    onSuccess: (newTodo) => {
+      refetch(); // Refresh the todos after adding a new todo
+    },
+  });
+
+  const deleteTodoMutation = useMutation(deleteTodo, {
+    onSuccess: () => {
+      refetch(); // Refresh the todos after deleting a todo
+    },
+  });
 
   const handleSubmit = () => {
     if (inputEvent.trim() === '') return;
-    dispatch(addTodo(inputEvent));
+    addTodoMutation.mutate(inputEvent);
     setInputEvent('');
   };
 
@@ -18,6 +60,10 @@ const TodoList = () => {
       e.preventDefault();
       handleSubmit();
     }
+  };
+
+  const handleDeleteTodo = (id) => {
+    deleteTodoMutation.mutate(id);
   };
 
   return (
@@ -36,22 +82,23 @@ const TodoList = () => {
         />
       </div>
 
-      {selector.map((item) => {
-        return (
-          <div
-            key={item.id}
-            className='flex justify-between border-b border-orange-100 !mt-3'
-          >
-            <p className='font-normal italic'>{item.data}</p>
-            <button
-              onClick={() => dispatch(removeTodo(item.id))}
-              className='px-3 rounded-md text-grey hover:text-orange-400'
+      {todos &&
+        todos.map((item) => {
+          return (
+            <div
+              key={item.id}
+              className='flex justify-between border-b border-orange-100 !mt-3'
             >
-              X
-            </button>
-          </div>
-        );
-      })}
+              <p className='font-normal italic'>{item.text}</p>
+              <button
+                onClick={() => handleDeleteTodo(item.id)}
+                className='px-3 rounded-md text-grey hover:text-orange-400'
+              >
+                X
+              </button>
+            </div>
+          );
+        })}
     </div>
   );
 };
